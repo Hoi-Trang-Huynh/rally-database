@@ -1,0 +1,15 @@
+Project rally_database {
+  database_type: 'MongoDB'
+  Note: 'Rally MongoDB Database Schema'
+}
+
+Table users {
+  id integer [primary key, increment]
+  username varchar(255) [not null, unique]
+  display_name varchar(255) [not null]
+  email varchar(255) [not null, unique]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+  
+  Note: 'User accounts table'
+}
