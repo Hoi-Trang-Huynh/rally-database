@@ -11,6 +11,8 @@ Table users as u {
   avatar_url varchar(512) [note: 'URL to user avatar image']
   bio_text text [note: 'User biography or profile description']
   is_active boolean [default: true, note: 'Indicates if the user account is active']
+  is_onboarded boolean [default: false, note: 'Has the user completed onboarding?']
+  is_email_verified boolean [default: false, note: 'Has the user verified their email?']
   phone_number varchar(20) [unique, note: 'User phone number for contact']
   email varchar(255) [not null, unique, note: 'User email address']
   created_at timestamp [default: `now()`, note: 'Account creation timestamp']
