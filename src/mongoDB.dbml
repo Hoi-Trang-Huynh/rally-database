@@ -7,29 +7,16 @@ Table users as u {
   id objectid [primary key, note: 'MongoDB ObjectId']
   firebase_uid varchar(255) [not null, unique, note: 'Firebase Authentication UID']
   username varchar(255) [not null, unique, note: 'Unique username for login']
-  display_name varchar(255) [not null, note: 'Public display name']
+  first_name varchar(255) [note: 'User first name']
+  last_name varchar(255) [note: 'User last name']
   avatar_url varchar(512) [note: 'URL to user avatar image']
   bio_text text [note: 'User biography or profile description']
   is_active boolean [default: true, note: 'Indicates if the user account is active']
-  is_onboarded boolean [default: false, note: 'Has the user completed onboarding?']
+  is_onboarding boolean [default: true, note: 'Has the user started onboarding?']
   is_email_verified boolean [default: false, note: 'Has the user verified their email?']
-  phone_number varchar(20) [unique, note: 'User phone number for contact']
+  phone_number varchar(20) [note: 'User phone number for contact']
   email varchar(255) [not null, unique, note: 'User email address']
   created_at timestamp [default: `now()`, note: 'Account creation timestamp']
   updated_at timestamp [note: 'Last profile update timestamp']
-  language language_codes [note: 'UI language (e.g., en, vn)']
-  theme theme_options [note: 'UI theme (e.g., light, dark, auto)']
-  
   Note: 'User accounts table'
-}
-
-enum theme_options {
-  light
-  dark
-  auto
-}
-
-enum language_codes {
-  en
-  vn
 }
