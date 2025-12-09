@@ -3,6 +3,14 @@ Project rally_database {
   Note: 'Rally MongoDB Database Schema'
 }
 
+Enum user_status {
+  active [note: 'User account is active and in good standing']
+  away [note: 'User account is away from their device']
+  inactive [note: 'User account is inactive/dormant']
+  suspended [note: 'User account is temporarily suspended']
+  banned [note: 'User account is permanently banned']
+}
+
 Table users as u {
   id objectid [primary key, note: 'MongoDB ObjectId']
   firebase_uid varchar(255) [not null, unique, note: 'Firebase Authentication UID']
@@ -11,7 +19,7 @@ Table users as u {
   last_name varchar(255) [note: 'User last name']
   avatar_url varchar(512) [note: 'URL to user avatar image']
   bio_text text [note: 'User biography or profile description']
-  is_active boolean [default: true, note: 'Indicates if the user account is active']
+  status user_status [default: 'active', note: 'Current status of the user account']
   is_onboarding boolean [default: true, note: 'Has the user started onboarding?']
   is_email_verified boolean [default: false, note: 'Has the user verified their email?']
   phone_number varchar(20) [note: 'User phone number for contact']
