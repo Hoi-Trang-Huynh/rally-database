@@ -28,3 +28,65 @@ Table users as u {
   updated_at timestamp [note: 'Last profile update timestamp']
   Note: 'User accounts table'
 }
+
+Enum session_status {
+  planning [note: 'Session is currently being planned']
+  confirmed [note: 'Session details are confirmed']
+  completed [note: 'Session has taken place']
+  cancelled [note: 'Session has been cancelled']
+}
+
+Enum participant_role {
+  owner [note: 'Creator and admin of the session']
+  editor [note: 'Can edit session details and spots']
+  participant [note: 'Can only view and experience the session']
+}
+
+Enum participation_status {
+  invited [note: 'User has been invited but not yet responded']
+  joined [note: 'User has accepted and joined the session']
+  declined [note: 'User has declined the invitation']
+  left [note: 'User has left the session']
+}
+
+Table sessions {
+  id objectid [primary key, note: 'MongoDB ObjectId']
+  owner_id objectid [ref: > users.id, not null, note: 'User who created the session']
+  name varchar(255) [not null, note: 'Name of the trip/hangout']
+  description text [note: 'Description or goal of the session']
+  cover_image_url varchar(512) [note: 'Cover image for the session']
+  status session_status [default: 'planning', note: 'Current status of the session']
+  start_date timestamp [note: 'Overall start date of the trip']
+  end_date timestamp [note: 'Overall end date of the trip']
+  created_at timestamp [default: `now()`, note: 'Session creation timestamp']
+  updated_at timestamp [note: 'Last update timestamp']
+  Note: 'Sessions table representing trips or hangouts'
+}
+
+Table spots {
+  id objectid [primary key, note: 'MongoDB ObjectId']
+  session_id objectid [ref: > sessions.id, not null, note: 'The session this spot belongs to']
+  google_place_id varchar(255) [note: 'Google Maps Place ID']
+  name varchar(255) [not null, note: 'Name of the location']
+  address varchar(512) [note: 'Full address of the location']
+  lat double [note: 'Latitude']
+  lng double [note: 'Longitude']
+  start_time timestamp [note: 'Planned arrival or start time']
+  end_time timestamp [note: 'Planned departure or end time']
+  notes text [note: 'Notes for this specific spot']
+  visit_order int [note: 'Order of this spot in the itinerary']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+  Note: 'Spots or destinations within a session'
+}
+
+Table session_participants {
+  id objectid [primary key, note: 'MongoDB ObjectId']
+  session_id objectid [ref: > sessions.id, not null, note: 'The session']
+  user_id objectid [ref: > users.id, not null, note: 'The participant user']
+  role participant_role [default: 'viewer', not null, note: 'Access level of the participant']
+  status participation_status [default: 'invited', not null, note: 'Invitation status']
+  joined_at timestamp [note: 'When the user joined']
+  invited_at timestamp [default: `now()`, note: 'When the invitation was sent']
+  Note: 'Join table for Users and Sessions with roles'
+}
