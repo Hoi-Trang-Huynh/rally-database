@@ -24,6 +24,8 @@ Table users as u {
   is_email_verified boolean [default: false, note: 'Has the user verified their email?']
   phone_number varchar(20) [note: 'User phone number for contact']
   email varchar(255) [not null, unique, note: 'User email address']
+  follower_count int [default: 0, note: 'Number of followers']
+  following_count int [default: 0, note: 'Number of users followed']
   created_at timestamp [default: `now()`, note: 'Account creation timestamp']
   updated_at timestamp [note: 'Last profile update timestamp']
   Note: 'User accounts table'
