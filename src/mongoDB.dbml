@@ -24,8 +24,6 @@ Table users as u {
   is_email_verified boolean [default: false, note: 'Has the user verified their email?']
   phone_number varchar(20) [note: 'User phone number for contact']
   email varchar(255) [not null, unique, note: 'User email address']
-  follower_count int [default: 0, note: 'Number of followers']
-  following_count int [default: 0, note: 'Number of users followed']
   created_at timestamp [default: `now()`, note: 'Account creation timestamp']
   updated_at timestamp [note: 'Last profile update timestamp']
   Note: 'User accounts table'
@@ -65,21 +63,45 @@ Table sessions {
   Note: 'Sessions table representing trips or hangouts'
 }
 
-Table spots {
+Table destinations {
   id objectid [primary key, note: 'MongoDB ObjectId']
-  session_id objectid [ref: > sessions.id, not null, note: 'The session this spot belongs to']
+  session_id objectid [ref: > sessions.id, not null, note: 'The session this destination belongs to']
   google_place_id varchar(255) [note: 'Google Maps Place ID']
   name varchar(255) [not null, note: 'Name of the location']
-  address varchar(512) [note: 'Full address of the location']
   lat double [note: 'Latitude']
   lng double [note: 'Longitude']
   start_time timestamp [note: 'Planned arrival or start time']
   end_time timestamp [note: 'Planned departure or end time']
-  notes text [note: 'Notes for this specific spot']
-  visit_order int [note: 'Order of this spot in the itinerary']
+  notes text [note: 'Notes for this specific destination']
+  visit_order int [note: 'Order of this destination in the itinerary']
   created_at timestamp [default: `now()`]
   updated_at timestamp
-  Note: 'Spots or destinations within a session'
+  Note: 'Destinations within a session'
+}
+
+Enum activity_status {
+  planned [note: 'Activity is planned but not started']
+  in_progress [note: 'Activity is currently happening']
+  completed [note: 'Activity has been completed']
+  skipped [note: 'Activity was skipped']
+}
+
+Table activities {
+  id objectid [primary key, note: 'MongoDB ObjectId']
+  destination_id objectid [ref: > destinations.id, not null, note: 'The destination this activity belongs to']
+  name varchar(255) [not null, note: 'Name of the activity']
+  description text [note: 'Description of the activity']
+  status activity_status [default: 'planned', note: 'Current status of the activity']
+  google_place_id varchar(255) [note: 'Google Maps Place ID (optional)']
+  lat double [note: 'Latitude (optional)']
+  lng double [note: 'Longitude (optional)']
+  start_time timestamp [note: 'Planned start time']
+  end_time timestamp [note: 'Planned end time']
+  notes text [note: 'Additional notes for this activity']
+  activity_order int [note: 'Order of this activity within the destination']
+  created_at timestamp [default: `now()`, note: 'Activity creation timestamp']
+  updated_at timestamp [note: 'Last update timestamp']
+  Note: 'Activities within a destination'
 }
 
 Table session_participants {
