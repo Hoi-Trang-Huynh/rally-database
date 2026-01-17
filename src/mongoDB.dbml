@@ -26,7 +26,38 @@ Table users as u {
   email varchar(255) [not null, unique, note: 'User email address']
   created_at timestamp [default: `now()`, note: 'Account creation timestamp']
   updated_at timestamp [note: 'Last profile update timestamp']
+  is_private boolean [default: false, note: 'If true, follow requests require approval']
+  followers_count int [default: 0, note: 'Cached count of followers']
+  following_count int [default: 0, note: 'Cached count of users being followed']
   Note: 'User accounts table'
+}
+
+Enum follow_status {
+  pending [note: 'Follow request sent, awaiting approval (for private accounts)']
+  accepted [note: 'Follow is active']
+  blocked [note: 'User has blocked this follower']
+}
+
+// Hybrid system: Followers/Following for discovery, Mutual follows = Friends for session invites
+Table follows {
+  id objectid [primary key, note: 'MongoDB ObjectId']
+  follower_id objectid [ref: > users.id, not null, note: 'User who is following']
+  following_id objectid [ref: > users.id, not null, note: 'User being followed']
+  status follow_status [default: 'accepted', note: 'Current status of the follow']
+  created_at timestamp [default: `now()`, note: 'When the follow was initiated']
+  updated_at timestamp [note: 'Last status change timestamp']
+
+  indexes {
+    (follower_id, following_id) [unique, note: 'Prevent duplicate follows']
+    follower_id [note: 'Query: who does this user follow?']
+    following_id [note: 'Query: who follows this user?']
+  }
+
+  Note: '''
+  Follow relationships between users.
+  - One-way follows for discovery/feed
+  - Mutual follows (A→B AND B→A both accepted) = "Friends" for session invites
+  '''
 }
 
 Enum session_status {
