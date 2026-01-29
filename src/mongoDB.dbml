@@ -26,5 +26,136 @@ Table users as u {
   email varchar(255) [not null, unique, note: 'User email address']
   created_at timestamp [default: `now()`, note: 'Account creation timestamp']
   updated_at timestamp [note: 'Last profile update timestamp']
+  followers_count int [default: 0, note: 'Cached count of followers']
+  following_count int [default: 0, note: 'Cached count of users being followed']
   Note: 'User accounts table'
+}
+
+// Hybrid system: Followers/Following for discovery, Mutual follows = Friends for rally invites
+Table follows {
+  id objectid [primary key, note: 'MongoDB ObjectId']
+  follower_id objectid [ref: > users.id, not null, note: 'User who is following']
+  following_id objectid [ref: > users.id, not null, note: 'User being followed']
+  created_at timestamp [default: `now()`, note: 'When the follow was initiated']
+  updated_at timestamp [note: 'Last status change timestamp']
+
+  indexes {
+    (follower_id, following_id) [unique, note: 'Prevent duplicate follows']
+    follower_id [note: 'Query: who does this user follow?']
+    following_id [note: 'Query: who follows this user?']
+  }
+
+  Note: '''
+  Follow relationships between users.
+  - One-way follows for discovery/feed
+  - Mutual follows (A→B AND B→A) = "Friends" for rally invites
+  '''
+}
+
+Enum rally_status {
+  planning [note: 'Rally is currently being planned']
+  confirmed [note: 'Rally details are confirmed']
+  completed [note: 'Rally has taken place']
+  cancelled [note: 'Rally has been cancelled']
+}
+
+Enum participant_role {
+  owner [note: 'Creator and admin of the rally']
+  editor [note: 'Can edit rally details and spots']
+  participant [note: 'Can only view and experience the rally']
+}
+
+Enum participation_status {
+  invited [note: 'User has been invited but not yet responded']
+  joined [note: 'User has accepted and joined the rally']
+  declined [note: 'User has declined the invitation']
+  left [note: 'User has left the rally']
+}
+
+Table rallies {
+  id objectid [primary key, note: 'MongoDB ObjectId']
+  owner_id objectid [ref: > users.id, not null, note: 'User who created the rally']
+  name varchar(255) [not null, note: 'Name of the trip/hangout']
+  description text [note: 'Description or goal of the rally']
+  cover_image_url varchar(512) [note: 'Cover image for the rally']
+  status rally_status [default: 'planning', note: 'Current status of the rally']
+  start_date timestamp [note: 'Overall start date of the trip']
+  end_date timestamp [note: 'Overall end date of the trip']
+  created_at timestamp [default: `now()`, note: 'Rally creation timestamp']
+  updated_at timestamp [note: 'Last update timestamp']
+
+  indexes {
+    owner_id [note: 'Query: get all rallies for a user']
+  }
+
+  Note: 'Rallies table representing trips or hangouts'
+}
+
+Table destinations {
+  id objectid [primary key, note: 'MongoDB ObjectId']
+  rally_id objectid [ref: > rallies.id, not null, note: 'The rally this destination belongs to']
+  google_place_id varchar(255) [note: 'Google Maps Place ID']
+  name varchar(255) [not null, note: 'Name of the location']
+  lat double [note: 'Latitude']
+  lng double [note: 'Longitude']
+  start_time timestamp [note: 'Planned arrival or start time']
+  end_time timestamp [note: 'Planned departure or end time']
+  notes text [note: 'Notes for this specific destination']
+  visit_order int [note: 'Order of this destination in the itinerary']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+
+  indexes {
+    rally_id [note: 'Query: get all destinations for a rally']
+  }
+
+  Note: 'Destinations within a rally'
+}
+
+Enum activity_status {
+  planned [note: 'Activity is planned but not started']
+  in_progress [note: 'Activity is currently happening']
+  completed [note: 'Activity has been completed']
+  skipped [note: 'Activity was skipped']
+}
+
+Table activities {
+  id objectid [primary key, note: 'MongoDB ObjectId']
+  destination_id objectid [ref: > destinations.id, not null, note: 'The destination this activity belongs to']
+  name varchar(255) [not null, note: 'Name of the activity']
+  description text [note: 'Description of the activity']
+  status activity_status [default: 'planned', note: 'Current status of the activity']
+  google_place_id varchar(255) [note: 'Google Maps Place ID (optional)']
+  lat double [note: 'Latitude (optional)']
+  lng double [note: 'Longitude (optional)']
+  start_time timestamp [note: 'Planned start time']
+  end_time timestamp [note: 'Planned end time']
+  notes text [note: 'Additional notes for this activity']
+  activity_order int [note: 'Order of this activity within the destination']
+  created_at timestamp [default: `now()`, note: 'Activity creation timestamp']
+  updated_at timestamp [note: 'Last update timestamp']
+
+  indexes {
+    destination_id [note: 'Query: get all activities for a destination']
+  }
+
+  Note: 'Activities within a destination'
+}
+
+Table rally_participants {
+  id objectid [primary key, note: 'MongoDB ObjectId']
+  rally_id objectid [ref: > rallies.id, not null, note: 'The rally']
+  user_id objectid [ref: > users.id, not null, note: 'The participant user']
+  role participant_role [default: 'participant', not null, note: 'Access level of the participant']
+  status participation_status [default: 'invited', not null, note: 'Invitation status']
+  joined_at timestamp [note: 'When the user joined']
+  invited_at timestamp [default: `now()`, note: 'When the invitation was sent']
+
+  indexes {
+    (rally_id, user_id) [unique, note: 'Prevent duplicate participants']
+    rally_id [note: 'Query: who is in this rally?']
+    user_id [note: 'Query: which rallies is this user in?']
+  }
+
+  Note: 'Join table for Users and Rallies with roles'
 }
