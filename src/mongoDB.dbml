@@ -92,25 +92,25 @@ Table rallies {
   Note: 'Rallies table representing trips or hangouts'
 }
 
-Table destinations {
+Table events {
   id objectid [primary key, note: 'MongoDB ObjectId']
-  rally_id objectid [ref: > rallies.id, not null, note: 'The rally this destination belongs to']
+  rally_id objectid [ref: > rallies.id, not null, note: 'The rally this event belongs to']
   google_place_id varchar(255) [note: 'Google Maps Place ID']
-  name varchar(255) [not null, note: 'Name of the location']
+  name varchar(255) [not null, note: 'Name of the event/location']
   lat double [note: 'Latitude']
   lng double [note: 'Longitude']
   start_time timestamp [note: 'Planned arrival or start time']
   end_time timestamp [note: 'Planned departure or end time']
-  notes text [note: 'Notes for this specific destination']
-  visit_order int [note: 'Order of this destination in the itinerary']
+  notes text [note: 'Notes for this specific event']
+  visit_order int [note: 'Order of this event in the itinerary']
   created_at timestamp [default: `now()`]
   updated_at timestamp
 
   indexes {
-    rally_id [note: 'Query: get all destinations for a rally']
+    rally_id [note: 'Query: get all events for a rally']
   }
 
-  Note: 'Destinations within a rally'
+  Note: 'Events within a rally'
 }
 
 Enum activity_status {
@@ -122,7 +122,7 @@ Enum activity_status {
 
 Table activities {
   id objectid [primary key, note: 'MongoDB ObjectId']
-  destination_id objectid [ref: > destinations.id, not null, note: 'The destination this activity belongs to']
+  event_id objectid [ref: > events.id, not null, note: 'The event this activity belongs to']
   name varchar(255) [not null, note: 'Name of the activity']
   description text [note: 'Description of the activity']
   status activity_status [default: 'planned', note: 'Current status of the activity']
@@ -132,15 +132,15 @@ Table activities {
   start_time timestamp [note: 'Planned start time']
   end_time timestamp [note: 'Planned end time']
   notes text [note: 'Additional notes for this activity']
-  activity_order int [note: 'Order of this activity within the destination']
+  activity_order int [note: 'Order of this activity within the event']
   created_at timestamp [default: `now()`, note: 'Activity creation timestamp']
   updated_at timestamp [note: 'Last update timestamp']
 
   indexes {
-    destination_id [note: 'Query: get all activities for a destination']
+    event_id [note: 'Query: get all activities for an event']
   }
 
-  Note: 'Activities within a destination'
+  Note: 'Activities within an event'
 }
 
 Table rally_participants {
