@@ -53,10 +53,11 @@ Table follows {
 }
 
 Enum rally_status {
-  planning [note: 'Rally is currently being planned']
-  confirmed [note: 'Rally details are confirmed']
-  completed [note: 'Rally has taken place']
-  cancelled [note: 'Rally has been cancelled']
+  draft [note: 'Rally is currently being planned']
+  active [note: 'Rally is currently active']
+  inactive [note: 'Rally is currently inactive']
+  completed [note: 'Rally has been completed']
+  archived [note: 'Rally has been archived']
 }
 
 Enum participant_role {
@@ -78,7 +79,7 @@ Table rallies {
   name varchar(255) [not null, note: 'Name of the trip/hangout']
   description text [note: 'Description or goal of the rally']
   cover_image_url varchar(512) [note: 'Cover image for the rally']
-  status rally_status [default: 'planning', note: 'Current status of the rally']
+  status rally_status [default: 'draft', note: 'Current status of the rally']
   start_date timestamp [note: 'Overall start date of the trip']
   end_date timestamp [note: 'Overall end date of the trip']
   created_at timestamp [default: `now()`, note: 'Rally creation timestamp']
@@ -148,6 +149,7 @@ Table rally_participants {
   user_id objectid [ref: > users.id, not null, note: 'The participant user']
   role participant_role [default: 'participant', not null, note: 'Access level of the participant']
   status participation_status [default: 'invited', not null, note: 'Invitation status']
+  invited_by objectid [ref: > users.id, note: 'User who sent the invitation']
   joined_at timestamp [note: 'When the user joined']
   invited_at timestamp [default: `now()`, note: 'When the invitation was sent']
 
