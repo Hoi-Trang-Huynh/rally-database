@@ -52,14 +52,6 @@ Table follows {
   '''
 }
 
-Enum rally_status {
-  draft [note: 'Rally is currently being planned']
-  active [note: 'Rally is currently active']
-  inactive [note: 'Rally is currently inactive']
-  completed [note: 'Rally has been completed']
-  archived [note: 'Rally has been archived']
-}
-
 Enum participant_role {
   owner [note: 'Creator and admin of the rally']
   editor [note: 'Can edit rally details and spots']
@@ -71,6 +63,14 @@ Enum participation_status {
   joined [note: 'User has accepted and joined the rally']
   declined [note: 'User has declined the invitation']
   left [note: 'User has left the rally']
+}
+
+Enum rally_status {
+  draft [note: 'Rally is currently being planned']
+  active [note: 'Rally is currently active']
+  inactive [note: 'Rally is currently inactive']
+  completed [note: 'Rally has been completed']
+  archived [note: 'Rally has been archived']
 }
 
 Table rallies {
@@ -160,4 +160,24 @@ Table rally_participants {
   }
 
   Note: 'Join table for Users and Rallies with roles'
+}
+
+Table invite_links {
+  id objectid [primary key, note: 'MongoDB ObjectId']
+  rally_id objectid [ref: > rallies.id, not null, note: 'The rally this link grants access to']
+  created_by objectid [ref: > users.id, not null, note: 'User who created the link']
+  token varchar(255) [not null, unique, note: 'Unique UUID v4 string from backend']
+  role_to_grant participant_role [not null, note: 'Role to grant when joining via this link']
+  expires_at timestamp [note: 'Auto-expires link if set']
+  max_uses int [default: 0, note: '0 = unlimited uses']
+  current_uses int [default: 0, note: 'Number of times this link has been used']
+  is_active boolean [default: true, note: 'Allows manual revocation']
+  created_at timestamp [default: `now()`, note: 'Link creation timestamp']
+
+  indexes {
+    token [unique, note: 'Fast lookup by token']
+    rally_id [note: 'Query: all links for a rally']
+  }
+
+  Note: 'Invite links for sharing and joining rallies'
 }
